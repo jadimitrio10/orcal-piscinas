@@ -272,8 +272,43 @@ var header_fixed_setting = {"fixed_header":"1"};
 <p><span class="wpcf7-form-control-wrap your-subject"><input type="text" name="your-subject" value="" size="40" class="wpcf7-form-control wpcf7-text" aria-invalid="false" placeholder="Asunto" /></span></p>
 <p><span class="wpcf7-form-control-wrap your-message"><textarea name="your-message" cols="40" rows="10" class="wpcf7-form-control wpcf7-textarea" aria-invalid="false" placeholder="Mensaje"></textarea></span></p>
 <p><input type="submit" value="Enviar Mensaje" class="wpcf7-form-control wpcf7-submit btn btn-large btn-secondary" /></p>
-<div class="wpcf7-response-output wpcf7-mail-sent-ok" id="form-enviado" style="display:none">Gracias por su mensaje. Nos pondremos en contacto con usted pronto.</div></form>
-<script>if(location.search.indexOf("enviado=1")>-1){var e=document.getElementById("form-enviado");if(e){e.style.display="block";}}</script></div></div></div></div><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper"><div class="vc_row wpb_row vc_inner vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner vc_custom_1423767656799"><div class="wpb_wrapper">
+<div class="wpcf7-response-output wpcf7-display-none" id="form-respuesta" role="alert"></div></form>
+<script>
+(function () {
+  var form = document.querySelector('form[name="contacto"]');
+  var out = document.getElementById('form-respuesta');
+  if (!form || !out) return;
+  var OK = 'Gracias por su mensaje. Ha sido enviado.';
+  var FAIL = 'Hubo un error al enviar su mensaje. Por favor inténtelo de nuevo o escríbanos a orcalpiscinas@orcal.com.co.';
+  function show(text, ok) {
+    out.textContent = text;
+    out.className = 'wpcf7-response-output ' + (ok ? 'wpcf7-mail-sent-ok' : 'wpcf7-mail-sent-ng');
+    out.style.display = 'block';
+  }
+  // Fallback: page reloaded after a native (no-JS fetch) submission
+  if (location.search.indexOf('enviado=1') > -1) show(OK, true);
+  if (!window.fetch || !window.URLSearchParams || !window.FormData) return;
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var btn = form.querySelector('input[type="submit"]');
+    if (btn) btn.disabled = true;
+    out.style.display = 'none';
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(new FormData(form)).toString()
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      form.reset();
+      show(OK, true);
+    }).catch(function () {
+      show(FAIL, false);
+    }).then(function () {
+      if (btn) btn.disabled = false;
+    });
+  });
+})();
+</script></div></div></div></div><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper"><div class="vc_row wpb_row vc_inner vc_row-fluid"><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner vc_custom_1423767656799"><div class="wpb_wrapper">
 	<div class="wpb_text_column wpb_content_element ">
 		<div class="wpb_wrapper">
 			<h4>OFICINAS</h4>
