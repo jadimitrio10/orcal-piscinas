@@ -1,0 +1,39 @@
+# Compara lo que responden los DNS de Netlify y los de CaribeHost para
+# orcalpiscinas.com, antes de cambiar los nameservers en GoDaddy.
+name: Comparar DNS Netlify vs CaribeHost
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main-fxrsjl]
+    paths: [.github/workflows/comparar-dns.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  comparar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar
+        run: |
+          sudo apt-get install -y -qq dnsutils >/dev/null
+          mkdir out
+          {
+          for ns in dns1.p07.nsone.net bhs-ns1.caribehost.co bhs-ns2.caribehost.co; do
+            echo "=== $ns"
+            for q in "orcalpiscinas.com A" "www.orcalpiscinas.com A" "orcalpiscinas.com MX" "orcalpiscinas.com TXT" "_dmarc.orcalpiscinas.com TXT"; do
+              set -- $q
+              echo "$1 $2: $(dig +short +norecurse @$ns $1 $2 | sort | tr '\n' ' ')"
+            done
+          done
+          echo "=== Nameservers actuales en el registro .com"
+          dig +short NS orcalpiscinas.com @a.gtld-servers.net +norecurse
+          dig +norecurse NS orcalpiscinas.com @a.gtld-servers.net | grep -A3 AUTHORITY
+          } | tee out/dns.txt
+      - name: Guardar
+        run: |
+          cd out && git init -q -b comparar-dns
+          git -c user.name=github-actions -c user.email=actions@github.com add .
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Comparación DNS"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" comparar-dns
