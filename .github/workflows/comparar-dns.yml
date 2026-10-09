@@ -27,6 +27,8 @@ jobs:
               echo "$1 $2: $(dig +short +norecurse @$ns $1 $2 | sort | tr '\n' ' ')"
             done
           done
+          echo "=== Lo que ven Google (8.8.8.8) y Cloudflare (1.1.1.1)"
+          for r in 8.8.8.8 1.1.1.1; do echo "$r NS: $(dig +short NS orcalpiscinas.com @$r | sort | tr '\n' ' ')  A: $(dig +short A orcalpiscinas.com @$r | tr '\n' ' ')"; done
           echo "=== Nameservers actuales en el registro .com"
           dig +short NS orcalpiscinas.com @a.gtld-servers.net +norecurse
           dig +norecurse NS orcalpiscinas.com @a.gtld-servers.net | grep -A3 AUTHORITY
