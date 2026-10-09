@@ -68,12 +68,46 @@ $cabeceras = array(
     'Content-Transfer-Encoding: 8bit',
 );
 
-$enviado = mail(
-    $DESTINO,
-    '=?UTF-8?B?' . base64_encode($titulo) . '?=',
-    $cuerpo,
-    implode("\r\n", $cabeceras),
-    '-f' . $REMITENTE
-);
+// Configuración opcional para enviar por SMTP con un buzón real.
+// Se crea a mano en el servidor (no está en git, el repositorio es público):
+//   <?php return array('host' => 'mx.caribehost.email', 'puerto' => 465,
+//                      'usuario' => 'webmaster@orcal.com.co', 'clave' => '...');
+$smtp = is_file(__DIR__ . '/contacto-config.php') ? include __DIR__ . '/contacto-config.php' : null;
 
-responder($enviado, $enviado ? 200 : 500);
+function smtp_enviar($c, $de, $para, $titulo, $cabeceras, $cuerpo) {
+    $f = @stream_socket_client('ssl://' . $c['host'] . ':' . $c['puerto'], $en, $es, 15);
+    if (!$f) { error_log("contacto.php SMTP conexión: $es"); return false; }
+    stream_set_timeout($f, 15);
+    $leer = function () use ($f) { $r = ''; while (($l = fgets($f, 515)) !== false) { $r .= $l; if (isset($l[3]) && $l[3] === ' ') break; } return $r; };
+    $cmd = function ($t, $ok) use ($f, $leer) { if ($t !== null) fwrite($f, $t . "\r\n"); $r = $leer(); if (strpos($r, (string) $ok) !== 0) { error_log('contacto.php SMTP: ' . trim($r)); return false; } return true; };
+    $datos = "To: $para\r\nSubject: $titulo\r\n" . implode("\r\n", $cabeceras) . "\r\n\r\n"
+           . preg_replace('/^\./m', '..', str_replace("\n", "\r\n", $cuerpo)) . "\r\n.";
+    $ok = $cmd(null, 220) && $cmd('EHLO orcalpiscinas.com', 250)
+       && $cmd('AUTH LOGIN', 334) && $cmd(base64_encode($c['usuario']), 334) && $cmd(base64_encode($c['clave']), 235)
+       && $cmd("MAIL FROM:<$de>", 250) && $cmd("RCPT TO:<$para>", 250)
+       && $cmd('DATA', 354) && $cmd($datos, 250);
+    fwrite($f, "QUIT\r\n"); fclose($f);
+    return $ok;
+}
+
+$tituloCodificado = '=?UTF-8?B?' . base64_encode($titulo) . '?=';
+$via = '';
+if (is_array($smtp)) {
+    $remitenteSmtp = $smtp['usuario'];
+    $cab = $cabeceras; $cab[0] = 'From: OrCal Web <' . $remitenteSmtp . '>';
+    $cab[] = 'Date: ' . date('r');
+    $enviado = smtp_enviar($smtp, $remitenteSmtp, $DESTINO, $tituloCodificado, $cab, $cuerpo);
+    $via = 'smtp';
+} else {
+    $enviado = mail($DESTINO, $tituloCodificado, $cuerpo, implode("\r\n", $cabeceras), '-f' . $REMITENTE);
+    $via = 'mail-f';
+    if (!$enviado) {
+        $e = error_get_last();
+        error_log('contacto.php mail() con -f falló: ' . ($e ? $e['message'] : 'sin detalle'));
+        $enviado = mail($DESTINO, $tituloCodificado, $cuerpo, implode("\r\n", $cabeceras));
+        $via = 'mail';
+    }
+}
+
+http_response_code($enviado ? 200 : 500);
+echo json_encode(array('ok' => $enviado, 'via' => $via));
