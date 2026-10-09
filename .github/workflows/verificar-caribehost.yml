@@ -1,0 +1,58 @@
+# Revisión completa del sitio servido desde CaribeHost, sin depender del DNS:
+# todas las páginas y recursos, certificado, redirecciones, formulario y
+# capturas de pantalla. Se ejecuta a mano o al cambiar este archivo.
+name: Verificar CaribeHost
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main-fxrsjl]
+    paths: [.github/workflows/verificar-caribehost.yml, .github/verificar/**]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    env:
+      IP: ${{ secrets.FTP_SERVER }}
+      DOM: orcalpiscinas.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Páginas y recursos
+        run: python3 .github/verificar/recursos.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Certificado y redirecciones
+        run: |
+          {
+          echo "### Certificado"
+          echo '```'
+          echo | openssl s_client -servername $DOM -connect $IP:443 2>/dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
+          echo '```'
+          echo "Certificado válido para el navegador (curl sin -k): $(curl -s -o /dev/null -w '%{http_code}' --resolve $DOM:443:$IP https://$DOM/ || echo FALLA)"
+          echo "### Redirecciones"
+          for u in http://$DOM/ http://www.$DOM/ https://www.$DOM/; do
+            h=${u#*://}; h=${h%%/*}; p=443; [ "${u%%:*}" = http ] && p=80
+            echo "- $u → $(curl -sk -o /dev/null -w '%{http_code} %{redirect_url}' --resolve $h:$p:$IP $u)"
+          done
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Prueba real del formulario
+        run: |
+          r=$(curl -sk --resolve $DOM:443:$IP -w ' HTTP %{http_code}' \
+            --data-urlencode 'first-name=PRUEBA' --data-urlencode 'last-name=Migración CaribeHost' \
+            --data-urlencode 'your-email=noreply@orcal.com.co' --data-urlencode 'tel-879=0000000' \
+            --data-urlencode 'your-subject=PRUEBA del formulario (ignorar)' \
+            --data-urlencode 'your-message=Mensaje de prueba automático para verificar que el formulario de orcalpiscinas.com envía correos desde CaribeHost.' \
+            https://$DOM/contacto.php)
+          echo "### Formulario: $r" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Capturas de pantalla
+        run: |
+          npm i --no-save playwright@1.48.2 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+          node .github/verificar/capturas.js
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capturas
+          path: capturas/
