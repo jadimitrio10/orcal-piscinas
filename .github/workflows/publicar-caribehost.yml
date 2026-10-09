@@ -37,20 +37,38 @@ jobs:
 
       - uses: actions/checkout@v4
         if: steps.datos.outputs.listo == 'true'
+        with:
+          fetch-depth: 0
 
+      # Las fechas de los archivos quedan como las del último cambio en git,
+      # así solo se suben los archivos que de verdad cambiaron.
+      - name: Preparar herramientas
+        if: steps.datos.outputs.listo == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp git-restore-mtime
+          git restore-mtime
+
+      # lftp maneja bien FTPS (conexión cifrada) con el servidor de Plesk.
       - name: Subir archivos por FTP
         if: steps.datos.outputs.listo == 'true'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_DIR }}
-          protocol: ftps
-          security: loose
-          exclude: |
-            **/.git*
-            **/.git*/**
-            .github/**
-            netlify.toml
-            README.md
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ secrets.FTP_DIR }}
+        run: |
+          export LFTP_PASSWORD="$FTP_PASSWORD"
+          lftp --env-password -u "$FTP_USERNAME" "$FTP_SERVER" <<FIN
+          set cmd:fail-exit yes
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate no
+          set net:max-retries 3
+          set net:timeout 30
+          mirror --reverse --verbose --parallel=4 \
+            --exclude-glob .git* --exclude .git/ --exclude .github/ \
+            --exclude-glob netlify.toml --exclude-glob README.md \
+            ./ "$FTP_DIR"
+          quit
+          FIN
