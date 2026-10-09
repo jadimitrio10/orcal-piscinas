@@ -1,0 +1,36 @@
+# Prueba rápida del formulario de contacto en CaribeHost (sin depender del DNS).
+# Envía un mensaje de prueba real y guarda la respuesta en la rama "prueba-formulario".
+name: Probar formulario en CaribeHost
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main-fxrsjl]
+    paths: [.github/workflows/probar-formulario.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    env:
+      IP: ${{ secrets.FTP_SERVER }}
+    steps:
+      - name: Enviar prueba
+        run: |
+          mkdir out
+          curl -sk -m 60 --resolve orcalpiscinas.com:443:$IP -w '\nHTTP %{http_code} en %{time_total}s\n' \
+            --data-urlencode 'first-name=PRUEBA' --data-urlencode 'last-name=Formulario web' \
+            --data-urlencode 'your-email=noreply@orcal.com.co' --data-urlencode 'tel-879=0000000' \
+            --data-urlencode 'your-subject=PRUEBA del formulario (ignorar)' \
+            --data-urlencode 'your-message=Mensaje de prueba automático: el formulario de orcalpiscinas.com ya envía correos desde CaribeHost.' \
+            https://orcalpiscinas.com/contacto.php > out/resultado.txt 2>&1 || echo "curl falló: $?" >> out/resultado.txt
+          date -u >> out/resultado.txt
+          cat out/resultado.txt
+      - name: Guardar resultado
+        run: |
+          cd out && git init -q -b prueba-formulario
+          git -c user.name=github-actions -c user.email=actions@github.com add .
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Resultado de la prueba del formulario"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" prueba-formulario
