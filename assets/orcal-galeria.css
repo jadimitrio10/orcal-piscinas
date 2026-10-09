@@ -18,9 +18,12 @@
 
 @media (max-width:1099px){.gallery.gallery-lightbox{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:767px){
-  .gallery.gallery-lightbox{grid-template-columns:repeat(2,1fr);gap:10px}
-  /* la primera foto ocupa todo el ancho; si sobra una al final, también */
-  .gallery.gallery-lightbox .gallery-item:first-of-type,
-  .gallery.gallery-lightbox .gallery-item:last-of-type:nth-of-type(even){grid-column:1/-1}
-  .orcal-galeria-head h3{font-size:18px}
+  .gallery.gallery-lightbox{grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:20px!important}
+  .gallery.gallery-lightbox .gallery-icon a{aspect-ratio:4/3;border-radius:3px}
+  .gallery.gallery-lightbox .gallery-icon img{border-radius:3px}
+  .gallery.gallery-lightbox .gallery-icon a::after{width:20px;height:20px;right:4px;bottom:4px;background-size:13px}
+  .orcal-galeria-head{margin:4px 0 4px}
+  .orcal-galeria-head h3{font-size:17px}
+  .orcal-galeria-btn{padding:8px 12px;font-size:12px}
+  .orcal-galeria-hint{font-size:13px;line-height:1.4;margin-bottom:10px}
 }
