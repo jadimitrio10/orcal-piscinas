@@ -1,0 +1,26 @@
+/* Galerías de fotos: miniaturas más grandes y aviso para verlas */
+.orcal-galeria-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 6px}
+.orcal-galeria-head h3{margin:0;font-size:20px;font-weight:700;color:#333}
+.orcal-galeria-btn{display:inline-flex;align-items:center;gap:8px;background:#3384e0;color:#fff;border:0;border-radius:3px;padding:10px 16px;font:600 13px/1 "Montserrat",Helvetica,Arial,sans-serif;letter-spacing:.5px;text-transform:uppercase;cursor:pointer}
+.orcal-galeria-btn:hover,.orcal-galeria-btn:focus{background:#1f6fcb}
+.orcal-galeria-btn svg{width:16px;height:16px;fill:currentColor}
+.orcal-galeria-hint{margin:0 0 14px;font-size:14px;color:#888}
+
+.gallery.gallery-lightbox{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0 0 30px!important}
+.gallery.gallery-lightbox .gallery-item{width:auto!important;float:none!important;border:0!important;margin:0!important}
+.gallery.gallery-lightbox .gallery-icon{margin:0;opacity:1!important}
+.gallery.gallery-lightbox .gallery-icon a{position:relative;display:block;overflow:hidden;border-radius:4px;aspect-ratio:2/1;background:#eef2f5}
+.gallery.gallery-lightbox .gallery-icon img{display:block;width:100%;height:100%;object-fit:cover;border-radius:4px;transition:transform .3s ease}
+.gallery.gallery-lightbox .gallery-icon a:hover img{transform:scale(1.05)}
+.gallery.gallery-lightbox .gallery-icon a::after{content:"";position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.55) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 9.5 16a6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2z'/%3E%3C/svg%3E") center/18px no-repeat}
+
+.gallery.gallery-lightbox>.clear,.gallery.gallery-lightbox>br{display:none}
+
+@media (max-width:1099px){.gallery.gallery-lightbox{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:767px){
+  .gallery.gallery-lightbox{grid-template-columns:repeat(2,1fr);gap:10px}
+  /* la primera foto ocupa todo el ancho; si sobra una al final, también */
+  .gallery.gallery-lightbox .gallery-item:first-of-type,
+  .gallery.gallery-lightbox .gallery-item:last-of-type:nth-of-type(even){grid-column:1/-1}
+  .orcal-galeria-head h3{font-size:18px}
+}
