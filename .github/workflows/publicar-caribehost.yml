@@ -1,0 +1,56 @@
+# Publica el sitio en CaribeHost (Plesk) por FTP cada vez que se sube un cambio.
+# Necesita estos secretos en GitHub (Settings > Secrets and variables > Actions):
+#   FTP_SERVER    servidor FTP de Plesk (por ejemplo 144.217.64.24)
+#   FTP_USERNAME  usuario FTP de orcalpiscinas.com
+#   FTP_PASSWORD  contraseña FTP
+#   FTP_DIR       carpeta de destino, terminada en "/" (por ejemplo /orcal-web/)
+# Mientras falten, el trabajo termina sin hacer nada.
+name: Publicar en CaribeHost
+
+on:
+  push:
+    branches: [main, main-fxrsjl]
+  workflow_dispatch:
+
+concurrency:
+  group: publicar-caribehost
+  cancel-in-progress: false
+
+jobs:
+  ftp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Revisar que existan los datos de FTP
+        id: datos
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ secrets.FTP_DIR }}
+        run: |
+          if [ -n "$FTP_SERVER" ] && [ -n "$FTP_USERNAME" ] && [ -n "$FTP_PASSWORD" ] && [ -n "$FTP_DIR" ]; then
+            echo "listo=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Faltan secretos de FTP; no se publica nada." >> "$GITHUB_STEP_SUMMARY"
+            echo "listo=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.datos.outputs.listo == 'true'
+
+      - name: Subir archivos por FTP
+        if: steps.datos.outputs.listo == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_DIR }}
+          protocol: ftps
+          security: loose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            netlify.toml
+            README.md
