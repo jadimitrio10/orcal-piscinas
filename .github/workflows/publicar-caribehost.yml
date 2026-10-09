@@ -9,7 +9,7 @@ name: Publicar en CaribeHost
 
 on:
   push:
-    branches: [main, main-fxrsjl]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:

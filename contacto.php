@@ -143,4 +143,7 @@ if (is_array($smtp)) {
 }
 
 http_response_code($enviado ? 200 : 500);
-echo json_encode(array('ok' => $enviado, 'via' => $via . ($via === 'smtp' ? ' ' . ($enviado ? $SMTP_FALLO : implode(', ', $fallos)) : '')));
+if (!$enviado) {
+    error_log('contacto.php no se pudo enviar (' . $via . '): ' . (isset($fallos) ? implode(', ', $fallos) : ''));
+}
+echo json_encode(array('ok' => $enviado));
