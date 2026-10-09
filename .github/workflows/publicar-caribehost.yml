@@ -72,3 +72,18 @@ jobs:
             ./ "$FTP_DIR"
           quit
           FIN
+
+      # Pide algunas páginas y fotos directamente al servidor de CaribeHost
+      # (sin pasar por el DNS) y compara el tamaño con el del repositorio.
+      - name: Revisar el sitio en CaribeHost
+        if: steps.datos.outputs.listo == 'true'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        run: |
+          echo "| Archivo | HTTP | Tipo | Bytes servidor | Bytes repo |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          for f in index.html wp-content/uploads/2015/03/logoorcal.png wp-content/uploads/2015/05/DSC06642.jpg wp-content/themes/construction/style.css assets/orcal-galeria.css project/bdg-baru/index.html; do
+            r=$(curl -sk -o /tmp/out --resolve "orcalpiscinas.com:443:$FTP_SERVER" -w '%{http_code} %{content_type}' "https://orcalpiscinas.com/${f/index.html/}" || echo "error -")
+            echo "| $f | ${r%% *} | ${r#* } | $(stat -c %s /tmp/out 2>/dev/null) | $(stat -c %s "$f") |" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
+          echo "Formulario (GET, se espera 405):" $(curl -sk -o /dev/null -w '%{http_code}' --resolve "orcalpiscinas.com:443:$FTP_SERVER" https://orcalpiscinas.com/contacto.php) | tee -a "$GITHUB_STEP_SUMMARY"
