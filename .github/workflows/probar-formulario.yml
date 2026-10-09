@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   probar:
@@ -17,6 +18,13 @@ jobs:
     env:
       IP: ${{ secrets.FTP_SERVER }}
     steps:
+      - name: Esperar la publicación del mismo commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 10
+          id=$(gh run list -R ${{ github.repository }} --workflow publicar-caribehost.yml --commit $GITHUB_SHA --json databaseId -q '.[0].databaseId')
+          [ -n "$id" ] && gh run watch -R ${{ github.repository }} "$id" >/dev/null || true
       - name: Enviar prueba
         run: |
           mkdir out
