@@ -1,0 +1,28 @@
+=== dns1.p07.nsone.net
+orcalpiscinas.com A: 144.217.64.24 
+www.orcalpiscinas.com A: 144.217.64.24 
+orcalpiscinas.com MX: 0 aspmx.l.google.com. 10 alt3.aspmx.l.google.com. 10 alt4.aspmx.l.google.com. 5 alt1.aspmx.l.google.com. 5 alt2.aspmx.l.google.com. 
+orcalpiscinas.com TXT: "v=spf1 include:_spf.google.com ~all" 
+_dmarc.orcalpiscinas.com TXT: "v=DMARC1; p=quarantine;" 
+=== bhs-ns1.caribehost.co
+orcalpiscinas.com A: 144.217.64.24 
+www.orcalpiscinas.com A: 144.217.64.24 orcalpiscinas.com. 
+orcalpiscinas.com MX: 0 aspmx.l.google.com. 10 alt3.aspmx.l.google.com. 10 alt4.aspmx.l.google.com. 5 alt1.aspmx.l.google.com. 5 alt2.aspmx.l.google.com. 
+orcalpiscinas.com TXT: "v=spf1 include:_spf.google.com ~all" 
+_dmarc.orcalpiscinas.com TXT: "v=DMARC1; p=quarantine;" 
+=== bhs-ns2.caribehost.co
+orcalpiscinas.com A: 144.217.64.24 
+www.orcalpiscinas.com A: 144.217.64.24 orcalpiscinas.com. 
+orcalpiscinas.com MX: 0 aspmx.l.google.com. 10 alt3.aspmx.l.google.com. 10 alt4.aspmx.l.google.com. 5 alt1.aspmx.l.google.com. 5 alt2.aspmx.l.google.com. 
+orcalpiscinas.com TXT: "v=spf1 include:_spf.google.com ~all" 
+_dmarc.orcalpiscinas.com TXT: "v=DMARC1; p=quarantine;" 
+=== Nameservers actuales en el registro .com
+;; flags: qr; QUERY: 1, ANSWER: 0, AUTHORITY: 2, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+--
+;; AUTHORITY SECTION:
+orcalpiscinas.com.	172800	IN	NS	bhs-ns1.caribehost.co.
+orcalpiscinas.com.	172800	IN	NS	bhs-ns2.caribehost.co.
+
