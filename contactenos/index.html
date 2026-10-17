@@ -261,8 +261,7 @@ var header_fixed_setting = {"fixed_header":"1"};
 	</div>
 <div role="form" class="wpcf7" id="wpcf7-f4-p25-o1" lang="en-US" dir="ltr">
 <div class="screen-reader-response"></div>
-<form name="contacto" method="POST" action="/contacto.php" data-netlify="true" netlify-honeypot="bot-field" class="wpcf7-form">
-<input type="hidden" name="form-name" value="contacto" />
+<form name="contacto" method="POST" action="/contacto.php" class="wpcf7-form">
 <p style="display:none"><label>No llenar: <input name="bot-field" /></label></p>
 <div class="form_1_2">
 <span class="wpcf7-form-control-wrap first-name"><input type="text" name="first-name" value="" size="40" class="wpcf7-form-control wpcf7-text wpcf7-validates-as-required" aria-required="true" required aria-invalid="false" placeholder="Nombre *" /></span>
@@ -302,8 +301,7 @@ var header_fixed_setting = {"fixed_header":"1"};
     var btn = form.querySelector('input[type="submit"]');
     if (btn) btn.disabled = true;
     out.style.display = 'none';
-    // /contacto.php envía el correo en CaribeHost; en Netlify ese mismo
-    // POST lo recoge Netlify Forms, así que funciona en los dos.
+    // /contacto.php envía el correo por SMTP de CaribeHost.
     fetch('/contacto.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
